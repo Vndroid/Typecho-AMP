@@ -469,8 +469,7 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
         $pattern = '/\<img.*?src\=\"(.*?)\"[^>]*>/i';
         $patternMD = '/\!\[.*?\]\((http(s)?:\/\/.*?(jpg|png))/i';
         $patternMDfoot = '/\[.*?\]:\s*(http(s)?:\/\/.*?(jpg|png))/i';
-        $fake_refer = Helper::options()->index;
-        $fake_ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; en-US; rv:80.0) Gecko/20100101 Firefox/80.0';
+
         if (preg_match($patternMDfoot, $text, $img)) {
             $img_url = $img[1];
         } else if (preg_match($patternMD, $text, $img)) {
@@ -497,12 +496,12 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
         if (is_null($img_url)) {//如果没有找到图片则返回空
             return null;
         } else {//如果找到文章图片则返回图片数组
-            return self::getSizeArr($img_url, $fake_refer, $fake_ua);
+            return self::getSizeArr($img_url);
         }
     }
 
     //获取图片尺寸
-    private static function getSizeArr($img_url, $fake_refer = '', $fake_ua = '', $width = '700', $height = '400')
+    private static function getSizeArr($img_url, $width = '700', $height = '400')
     {
         try {
             $error = 'getimagesize error';
@@ -519,8 +518,8 @@ class AMP_Action extends Typecho_Widget implements Widget_Interface_Do
         } catch (Exception $e) {//出问题 或 获取不到则使用默认尺寸
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $img_url);
-            $fake_ua && curl_setopt($ch, CURLOPT_USERAGENT, $fake_ua);     //伪造ua
-            $fake_refer && curl_setopt($ch, CURLOPT_REFERER, $fake_refer); //伪造ref
+            curl_setopt($ch, CURLOPT_USERAGENT, Helper::options()->index);     //伪造ua
+            curl_setopt($ch, CURLOPT_REFERER, 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; en-US; rv:80.0) Gecko/20100101 Firefox/80.0'); //伪造ref
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
             $content = curl_exec($ch);
